@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Casino Bingo Caller 1–90</title>
+
+<style>
+/* ================================
+   GLOBAL LAYOUT
+=================================== */
+
+body {
+    margin: 2;
+    font-family: Arial, sans-serif;
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 50% 50%;
+    overflow: auto;
+    transition: background 0.4s, color 0.4s;
+}
+
+/* LEFT SIDE */
+#leftSide {
+    display: grid;
+    grid-template-rows: 75% 25%;
+    padding: 10px;
+}
+
+/* CALLING NUMBER AREA */
+/*
+#bigNumber {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: clamp(150px, 18vw, 350px);
+	 font-family: "Arial Black", Impact, sans-serif;
+
+    font-weight: bold;
+    text-shadow: none;
+    transition: all 0.3s ease-out;
+    overflow: hidden;
+   -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+
+
+}
+*/
+
+#bigNumber {
+    width: 730px;
+    height: 730px;
+    margin: auto;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 620px;
+    font-family: "Times New Roman", Impact, non-serif;
+    font-weight: bold;
+
+    border-radius: 50%;
+
+    background: radial-gradient(circle at 40% 40%, #ffffff, #cccccc 40%, #888 70%, #222);
+    box-shadow:
+        inset -20px -20px 40px rgba(0,0,0,0.6),
+        inset 20px 20px 40px rgba(255,255,255,0.8),
+        0 0 40px rgba(255,255,255,0.6);
+
+    color: black;
+    text-shadow:
+        0 0 5px #fff,
+        0 0 10px #fff,
+        0 0 20px #fff;
+
+    transition: all 0.3s ease;
+}
+
+/* DOUBLE BOUNCE + FADE */
+.callBounce {
+    animation: bounceY 0.6s ease-out;
+}
+
+@keyframes bounceY {
+    0% { transform: translateY(-40px); opacity: 0; }
+    60% { transform: translateY(10px); opacity: 1; }
+    100% { transform: translateY(0); }
+}
+@keyframes bounce1 {
+    0% { transform: scale(0.4); opacity: 0.2; }
+    60% { transform: scale(1.3); opacity: 1; }
+    100% { transform: scale(1); }
+}
+
+@keyframes bounce2 {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+/*
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0.85; }
+}
+*/
+/* ================================
+   BUTTON PANEL (2 COLUMNS)
+=================================== */
+
+#controls {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    gap: 10px;
+    padding: 10px;
+}
+
+button {
+    font-size: 18px;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+    transition: transform 0.15s, box-shadow 0.2s;
+}
+
+.exitBtn {
+    background: #ff0000 !important;
+    color: white !important;
+}
+
+/* 3-D BUTTON STYLES */
+.btn-glossy {
+    background: linear-gradient(to bottom, #ffffff55, #00000055);
+    box-shadow: inset 0 3px 6px #ffffff55, 0 6px 12px #000000aa;
+}
+
+.btn-metallic {
+    background: linear-gradient(145deg, #eeeeee55, #11111155);
+    box-shadow: inset 0 2px 4px #ffffff55, 0 4px 10px #000000aa;
+}
+
+.btn-soft {
+    background: linear-gradient(to bottom, #444, #222);
+    box-shadow: 0 4px 8px #00000088;
+}
+
+button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px #000000aa;
+}
+
+/* small helper */
+.controlBlock {
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* ================================
+   THEMES
+=================================== */
+
+.theme-dark {
+    background: #111;
+    color: white;
+}
+
+.theme-bright {
+    background: #ffffff;
+    color: black;
+}
+
+.theme-bright #bigNumber {
+    text-shadow: 0 0 20px #000;
+}
+
+/* ================================
+   BOARD (6 × 15)
+=================================== */
+
+
+
+#board {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(15, 1fr);
+    gap: 2px;
+    padding: 5px;
+}
+
+.cell {
+    border: 1px solid #555;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.2vw;
+    background: #333;
+    border-radius: 6px;
+    transition: background 0.3s, box-shadow 0.3s;
+}
+
+.cell.called {
+    background: #4fc3f7 !important;
+    color: black;
+    font-weight: bold;
+    box-shadow: none !important;
+    border: 3px solid #000;
+}
+/* ================================
+   JACKPOT OVERLAY
+=================================== */
+
+#jackpotOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: none;
+    z-index: 9999;
+}
+
+/* Confetti */
+.confettiPiece {
+    position: absolute;
+    width: 10px;
+    height: 14px;
+    opacity: 0.9;
+    animation: confettiFall 1.5s linear forwards;
+}
+
+@keyframes confettiFall {
+    to {
+        transform: translateY(120vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+/* Fireworks */
+.firework {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    animation: fireworkExplode 1.2s ease-out forwards;
+}
+
+@keyframes fireworkExplode {
+    0% { transform: scale(0.2); opacity: 1; }
+    100% { transform: scale(6); opacity: 0; }
+}
+
+/* Marquee Drop */
+.marquee {
+    position: absolute;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 8vw;
+    font-weight: bold;
+    color: gold;
+    text-shadow: 0 0 20px gold, 0 0 40px yellow;
+    animation: marqueeDrop 1s ease-out forwards;
+}
+
+@keyframes marqueeDrop {
+    to { top: 20%; }
+}
+
+/* Money Shower */
+.coin {
+    position: absolute;
+    font-size: 40px;
+    animation: coinFall 1.5s linear forwards;
+}
+
+@keyframes coinFall {
+    to { transform: translateY(120vh) rotate(360deg); opacity: 0; }
+}
+
+/* Starburst */
+.starburst {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    animation: starburstExpand 1.2s ease-out forwards;
+}
+
+@keyframes starburstExpand {
+    0% { transform: scale(0.2); opacity: 1; }
+    100% { transform: scale(10); opacity: 0; }
+}
+
+/* Rainbow Pulse */
+.rainbowPulse {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, red, orange, yellow, green, blue, indigo, violet);
+    opacity: 0.4;
+    animation: rainbowPulseAnim 1.2s ease-out forwards;
+}
+
+@keyframes rainbowPulseAnim {
+    0% { transform: scale(0.8); opacity: 0.4; }
+    100% { transform: scale(1.4); opacity: 0; }
+}
+</style>
+</head>
+
+<body class="theme-dark">
+
+<!-- LEFT HALF -->
+<div id="leftSide">
+
+    <!-- CALLING NUMBER -->
+    <div id="bigNumber">–</div>
+
+    <!-- BUTTON PANEL -->
+    <div id="controls">
+
+        <button id="startBtn" class="btn3d">START</button>
+        <button id="autoBtn" class="btn3d">AUTO CALL</button>
+
+        <div class="controlBlock">
+            Interval:<br>
+            <label><input type="radio" name="interval" value="3000" checked> 3s</label>
+            <label><input type="radio" name="interval" value="5000"> 5s</label>
+            <label><input type="radio" name="interval" value="7000"> 7s</label>
+            <label><input type="radio" name="interval" value="10000"> 10s</label>
+        </div>
+
+        <button id="soundBtn" class="btn3d">SOUND: ON</button>
+
+        <div class="controlBlock">
+            Language:<br>
+            <label><input type="radio" name="lang" value="en" checked> EN</label>
+            <label><input type="radio" name="lang" value="vi"> VI</label>
+        </div>
+
+        <div class="controlBlock">
+            Theme:<br>
+            <select id="themeSelect">
+                <option value="theme-dark">Dark Theme</option>
+                <option value="theme-bright">Bright Theme</option>
+            </select>
+        </div>
+
+        <button id="bingoBtn" class="btn3d">BINGO!</button>
+        <button id="resetBtn" class="btn3d">RESET</button>
+        <button id="exitBtn" class="btn3d exitBtn">EXIT</button>
+
+    </div>
+</div>
+
+<!-- RIGHT HALF: BOARD -->
+<div id="board"></div>
+
+<!-- JACKPOT OVERLAY -->
+<div id="jackpotOverlay"></div>
+
+<script>
+/* ============================================================
+   GLOBAL VARIABLES
+============================================================ */
+
+let numbers = [];
+let autoTimer = null;
+let soundOn = true;
+
+const bigNumber = document.getElementById("bigNumber");
+const boardEl = document.getElementById("board");
+const jackpotOverlay = document.getElementById("jackpotOverlay");
+
+const startBtn = document.getElementById("startBtn");
+const autoBtn = document.getElementById("autoBtn");
+const resetBtn = document.getElementById("resetBtn");
+const exitBtn = document.getElementById("exitBtn");
+const soundBtn = document.getElementById("soundBtn");
+const themeSelect = document.getElementById("themeSelect");
+const bingoBtn = document.getElementById("bingoBtn");
+
+/* ============================================================
+   RANDOM COLOR PALETTE
+============================================================ */
+
+const highContrastColors = [
+    "#ff0", "#0ff", "#f0f", "#0f0", "#f00", "#00f",
+    "#ff8800", "#ff44aa", "#44ff44", "#44aaff",
+    "#ffd700", "#c0c0c0", "#ff1493", "#00fa9a"
+];
+
+/* ============================================================
+   RANDOM 3-D BUTTON STYLES
+============================================================ */
+
+const buttonStyles = ["btn-glossy", "btn-metallic", "btn-soft"];
+
+function applyRandomButtonStyles() {
+    document.querySelectorAll(".btn3d").forEach(btn => {
+        const style = buttonStyles[Math.floor(Math.random() * buttonStyles.length)];
+        const color = highContrastColors[Math.floor(Math.random() * highContrastColors.length)];
+
+        btn.classList.add(style);
+        btn.style.backgroundColor = color;
+        btn.style.color = "black";
+        btn.style.textShadow = "0 0 4px white";
+    });
+}
+
+/* ============================================================
+   INITIALIZE BOARD
+============================================================ */
+/*
+function initBoard() {
+    boardEl.innerHTML = "";
+    for (let i = 1; i <= 90; i++) {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.id = "cell-" + i;
+        cell.textContent = i;
+        boardEl.appendChild(cell);
+    }
+}
+*/
+
+
+function initBoard() {
+    boardEl.innerHTML = "";
+
+    const rows = 15;
+    const cols = 6;
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+
+            // KEY FORMULA (column-wise numbering)
+            const num = r + 1 + c * rows;
+
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.id = "cell-" + num;
+            cell.textContent = num;
+
+            boardEl.appendChild(cell);
+        }
+    }
+}
+
+
+/* ============================================================
+   RESET GAME
+============================================================ */
+
+function resetGame() {
+    numbers = [];
+    for (let i = 1; i <= 90; i++) numbers.push(i);
+
+    initBoard();
+    bigNumber.textContent = "–";
+    startBtn.textContent = "START";
+
+    if (autoTimer) clearInterval(autoTimer);
+}
+
+/* ============================================================
+   SPEAK NUMBER
+============================================================ */
+/*
+function speakNumber(num) {
+    if (!soundOn) return;
+
+    const lang = document.querySelector("input[name='lang']:checked").value;
+    const text = lang === "vi" ? "Số " + num : "Number " + num;
+
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = lang === "vi" ? "vi-VN" : "en-US";
+    msg.rate = 0.9;
+    msg.pitch = 1.0;
+
+    speechSynthesis.speak(msg);
+}
+*/
+
+
+function speakNumber(num) {
+    if (!soundOn) return;
+
+    const lang = document.querySelector("input[name='lang']:checked").value;
+
+    let text = lang === "vi" ? "Số " + num : "Number " + num;
+
+    const msg = new SpeechSynthesisUtterance(text);
+
+    // Select best Vietnamese voice
+    const voices = speechSynthesis.getVoices();
+    let selectedVoice;
+
+    if (lang === "vi") {
+        selectedVoice = voices.find(v => v.lang === "vi-VN")
+                      || voices.find(v => v.lang.includes("vi"));
+    } else {
+        selectedVoice = voices.find(v => v.lang === "en-US");
+    }
+
+    if (selectedVoice) msg.voice = selectedVoice;
+
+    msg.rate = 0.85;
+    msg.pitch = 1.0;
+    msg.volume = 1;
+
+    speechSynthesis.cancel(); // stop overlap
+    speechSynthesis.speak(msg);
+// Load voices properly (fix Chrome bug)
+speechSynthesis.onvoiceschanged = () => {
+    speechSynthesis.getVoices();
+};
+
+}
+/* ============================================================
+   CALL NEXT NUMBER
+============================================================ */
+
+function animateCallingNumber(num) {
+    const color = highContrastColors[Math.floor(Math.random() * highContrastColors.length)];
+
+    bigNumber.style.color = color;
+    bigNumber.style.textShadow = `0 0 10px ${color}, 0 0 2px ${color}`;
+
+    bigNumber.textContent = num;
+    bigNumber.classList.remove("callBounce");
+    void bigNumber.offsetWidth;
+    bigNumber.classList.add("callBounce");
+}
+
+function callNext() {
+    if (numbers.length === 0) {
+        bigNumber.textContent = "END";
+        return;
+    }
+
+    const index = Math.floor(Math.random() * numbers.length);
+    const num = numbers.splice(index, 1)[0];
+
+    animateCallingNumber(num);
+
+    const cell = document.getElementById("cell-" + num);
+    cell.classList.add("called");
+
+    speakNumber(num);
+}
+
+/* ============================================================
+   AUTO CALL
+============================================================ */
+
+autoBtn.addEventListener("click", () => {
+    if (autoTimer) {
+        clearInterval(autoTimer);
+        autoTimer = null;
+        autoBtn.textContent = "AUTO CALL";
+        return;
+    }
+
+    const interval = parseInt(document.querySelector("input[name='interval']:checked").value);
+    autoTimer = setInterval(callNext, interval);
+    autoBtn.textContent = "STOP AUTO";
+});
+
+/* ============================================================
+   START / CALL BUTTON
+============================================================ */
+
+startBtn.addEventListener("click", () => {
+    if (startBtn.textContent === "START") {
+        startBtn.textContent = "CALL";
+    }
+    callNext();
+});
+
+/* ============================================================
+   SOUND TOGGLE
+============================================================ */
+
+soundBtn.addEventListener("click", () => {
+    soundOn = !soundOn;
+    soundBtn.textContent = soundOn ? "SOUND: ON" : "SOUND: OFF";
+});
+
+/* ============================================================
+   THEME SWITCHING
+============================================================ */
+
+themeSelect.addEventListener("change", () => {
+    document.body.className = themeSelect.value;
+});
+
+/* ============================================================
+   EXIT BUTTON
+============================================================ */
+
+exitBtn.addEventListener("click", () => {
+    // window.close() may not work in all browsers unless opened by script
+    alert("Close the tab or window to exit.");
+});
+
+/* ============================================================
+   JACKPOT EFFECTS
+============================================================ */
+
+function randomPlacement() {
+    return ["full", "left", "center"][Math.floor(Math.random() * 3)];
+}
+
+function showJackpot() {
+    jackpotOverlay.innerHTML = "";
+    jackpotOverlay.style.display = "block";
+
+    const effect = Math.floor(Math.random() * 7);
+    const placement = randomPlacement();
+
+    if (placement === "left") {
+        jackpotOverlay.style.width = "50%";
+        jackpotOverlay.style.left = "0";
+    } else if (placement === "center") {
+        jackpotOverlay.style.width = "60%";
+        jackpotOverlay.style.left = "20%";
+    } else {
+        jackpotOverlay.style.width = "100%";
+        jackpotOverlay.style.left = "0";
+    }
+
+    switch (effect) {
+        case 0: confettiExplosion(); break;
+        case 1: slotMachineWin(); break;
+        case 2: fireworksBurst(); break;
+        case 3: vegasMarquee(); break;
+        case 4: moneyShower(); break;
+        case 5: starburstFlash(); break;
+        case 6: rainbowPulse(); break;
+    }
+
+    setTimeout(() => {
+        jackpotOverlay.style.display = "none";
+    }, 1800);
+}
+
+/* JACKPOT EFFECT FUNCTIONS */
+
+function confettiExplosion() {
+    for (let i = 0; i < 80; i++) {
+        const c = document.createElement("div");
+        c.className = "confettiPiece";
+        c.style.left = Math.random() * 100 + "%";
+        c.style.top = "-20px";
+        c.style.background = highContrastColors[Math.floor(Math.random() * highContrastColors.length)];
+        jackpotOverlay.appendChild(c);
+    }
+}
+
+function slotMachineWin() {
+    const marquee = document.createElement("div");
+    marquee.className = "marquee";
+    marquee.textContent = "WINNER!";
+    jackpotOverlay.appendChild(marquee);
+}
+
+function fireworksBurst() {
+    for (let i = 0; i < 20; i++) {
+        const f = document.createElement("div");
+        f.className = "firework";
+        f.style.left = Math.random() * 100 + "%";
+        f.style.top = Math.random() * 100 + "%";
+        f.style.background = highContrastColors[Math.floor(Math.random() * highContrastColors.length)];
+        jackpotOverlay.appendChild(f);
+    }
+}
+
+function vegasMarquee() {
+    const m = document.createElement("div");
+    m.className = "marquee";
+    m.textContent = "BINGO!";
+    jackpotOverlay.appendChild(m);
+}
+
+function moneyShower() {
+    const symbols = ["💰", "💵", "🪙", "💲"];
+    for (let i = 0; i < 40; i++) {
+        const coin = document.createElement("div");
+        coin.className = "coin";
+        coin.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+        coin.style.left = Math.random() * 100 + "%";
+        coin.style.top = "-40px";
+        jackpotOverlay.appendChild(coin);
+    }
+}
+
+function starburstFlash() {
+    const s = document.createElement("div");
+    s.className = "starburst";
+    s.style.left = "50%";
+    s.style.top = "50%";
+    s.style.background = highContrastColors[Math.floor(Math.random() * highContrastColors.length)];
+    jackpotOverlay.appendChild(s);
+}
+
+function rainbowPulse() {
+    const r = document.createElement("div");
+    r.className = "rainbowPulse";
+    jackpotOverlay.appendChild(r);
+}
+
+/* ============================================================
+   BINGO BUTTON
+============================================================ */
+
+bingoBtn.addEventListener("click", showJackpot);
+
+/* ============================================================
+   RESET BUTTON
+============================================================ */
+
+resetBtn.addEventListener("click", () => {
+    if (autoTimer) {
+        clearInterval(autoTimer);
+        autoTimer = null;
+        autoBtn.textContent = "AUTO CALL";
+    }
+    jackpotOverlay.style.display = "none";
+    resetGame();
+});
+
+/* ============================================================
+   INIT
+============================================================ */
+
+applyRandomButtonStyles();
+resetGame();</script>
+
+</body>
+</html>
