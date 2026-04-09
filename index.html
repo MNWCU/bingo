@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta charset="UTF-8">
 <title>Casino Bingo Caller 1–90</title>
 
@@ -10,20 +11,27 @@
 =================================== */
 
 body {
-    margin: 2;
+    margin: 0;
     font-family: Arial, sans-serif;
     height: 100vh;
-    display: grid;
-    grid-template-columns: 50% 50%;
-    overflow: auto;
+    display: flex;
+  /*  grid-template-columns: 50% 50%; */
+	flex-direction: row;
+    height: 100vh;
+    overflow: hidden;
+    overflow: hidden;
     transition: background 0.4s, color 0.4s;
 }
 
 /* LEFT SIDE */
 #leftSide {
-    display: grid;
+	flex: 1;
+    display: flex;
+	flex-direction: column;
+	/*
     grid-template-rows: 75% 25%;
     padding: 10px;
+	*/
 }
 
 /* CALLING NUMBER AREA */
@@ -49,15 +57,19 @@ body {
 */
 
 #bigNumber {
-    width: 730px;
+  /*  width: 730px;
     height: 730px;
     margin: auto;
+*/
+	width: min(70vw, 300px);
+    height: min(70vw, 300px);
 
+    font-size: clamp(60px, 12vw, 150px);
     display: flex;
     justify-content: center;
     align-items: center;
 
-    font-size: 620px;
+   /* font-size: 620px; */
     font-family: "Times New Roman", Impact, non-serif;
     font-weight: bold;
 
@@ -185,10 +197,13 @@ button:hover {
 
 #board {
     display: grid;
+	flex: 1;
+	overflow: auto;
     grid-template-columns: repeat(6, 1fr);
     grid-template-rows: repeat(15, 1fr);
     gap: 2px;
     padding: 5px;
+	height: 100%;
 }
 
 .cell {
@@ -196,7 +211,8 @@ button:hover {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 2.2vw;
+   /* font-size: 2.2vw; */
+	 font-size: clamp(10px, 2vw, 18px);
     background: #333;
     border-radius: 6px;
     transition: background 0.3s, box-shadow 0.3s;
@@ -309,6 +325,33 @@ button:hover {
 @keyframes rainbowPulseAnim {
     0% { transform: scale(0.8); opacity: 0.4; }
     100% { transform: scale(1.4); opacity: 0; }
+}
+
+
+	@media (max-width: 768px) {
+
+    body {
+        flex-direction: column;
+        height: auto;
+        overflow: auto;
+    }
+
+    #leftSide {
+        width: 100%;
+    }
+
+    #board {
+        width: 100%;
+        height: auto;
+    }
+
+    #bigNumber {
+        margin: 10px auto;
+    }
+
+    #controls {
+        grid-template-columns: 1fr 1fr;
+    }
 }
 </style>
 </head>
